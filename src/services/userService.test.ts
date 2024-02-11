@@ -1,5 +1,3 @@
-// src/services/userService.test.ts
-
 import { createUser, deleteUser } from "./userService";
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/User";
@@ -58,22 +56,26 @@ describe("userService", () => {
         createdAt: new Date(),
       };
 
-      mockUserRepository.findOne!.mockResolvedValue(existingUser);
+      mockUserRepository.findOne?.mockResolvedValue(existingUser);
 
       await deleteUser(userId);
 
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith(userId); // Ensure userId is passed directly
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
       expect(mockUserRepository.remove).toHaveBeenCalledWith(existingUser);
     });
 
     it("should throw an error if user not found", async () => {
       const userId = 1;
 
-      mockUserRepository.findOne!.mockResolvedValue(undefined); // Simulate user not found
+      mockUserRepository.findOne!.mockResolvedValue(undefined);
 
       await expect(deleteUser(userId)).rejects.toThrowError("User not found");
 
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith(userId); // Ensure userId is passed directly
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
       expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });
   });
