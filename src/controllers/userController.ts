@@ -9,7 +9,6 @@ export const createUser = async (req: Request, res: Response) => {
     const user = await createUserHandler(req.body);
     return res.status(201).json(user);
   } catch (error) {
-    console.error("Error creating user:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -20,7 +19,6 @@ export const deleteUser = async (req: Request, res: Response) => {
     await deleteUserHandler(userId);
     return res.status(204).send(); // No content
   } catch (error) {
-    console.error("Error deleting user:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

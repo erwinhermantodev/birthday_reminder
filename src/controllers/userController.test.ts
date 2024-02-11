@@ -1,14 +1,17 @@
-import { createUser, deleteUser } from "./userService";
+import { Request, Response } from "express";
+import { createUser, deleteUser } from "./userController";
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/User";
 import { Repository } from "typeorm";
 
 jest.mock("../data-source");
 
-describe("userService", () => {
+describe("userController", () => {
   let mockUserRepository: Partial<
     Record<keyof Repository<User>, jest.Mock<any, any, any>>
   > = {};
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
 
   beforeEach(() => {
     mockUserRepository = {
@@ -21,6 +24,17 @@ describe("userService", () => {
     (AppDataSource.getRepository as jest.Mock).mockReturnValue(
       mockUserRepository
     );
+
+    mockRequest = {
+      body: {},
+      params: {},
+    };
+
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      send: jest.fn(),
+    };
   });
 
   describe("createUser", () => {
@@ -35,12 +49,14 @@ describe("userService", () => {
       };
       const newUser: User = { id: 1, ...userData, createdAt: new Date() };
 
+      mockRequest.body = userData;
       mockUserRepository.create!.mockReturnValue(newUser);
       mockUserRepository.save!.mockResolvedValue(newUser);
 
-      const result = await createUser(userData);
+      await createUser(mockRequest as Request, mockResponse as Response);
 
-      expect(result).toEqual(newUser);
+      expect(mockResponse.status).toHaveBeenCalledWith(201);
+      expect(mockResponse.json).toHaveBeenCalledWith(newUser);
       expect(mockUserRepository.create).toHaveBeenCalledWith(userData);
       expect(mockUserRepository.save).toHaveBeenCalledWith(newUser);
     });
@@ -48,9 +64,9 @@ describe("userService", () => {
 
   describe("deleteUser", () => {
     it("should delete an existing user", async () => {
-      const userId = 1;
+      const userId = "1"; // Change to string
       const existingUser: User = {
-        id: userId,
+        id: 1,
         firstName: "John",
         lastName: "Doe",
         birthday: new Date(),
@@ -60,25 +76,31 @@ describe("userService", () => {
         status_reminder: "sent",
       };
 
+      mockRequest.params = { id: userId };
       mockUserRepository.findOne?.mockResolvedValue(existingUser);
 
-      await deleteUser(userId);
+      await deleteUser(mockRequest as Request, mockResponse as Response);
 
+      expect(mockResponse.status).toHaveBeenCalledWith(204);
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: userId },
+        where: { id: parseInt(userId) }, // Parse userId to ensure it's a number
       });
       expect(mockUserRepository.remove).toHaveBeenCalledWith(existingUser);
     });
 
-    it("should throw an error if user not found", async () => {
-      const userId = 1;
+    it("should return 500 if an error occurs", async () => {
+      const userId = "1"; // Change to string
+      const errorMessage = "Internal server error";
 
-      mockUserRepository.findOne!.mockResolvedValue(undefined);
+      mockRequest.params = { id: userId };
+      mockUserRepository.findOne!.mockRejectedValue(new Error(errorMessage));
 
-      await expect(deleteUser(userId)).rejects.toThrowError("User not found");
+      await deleteUser(mockRequest as Request, mockResponse as Response);
 
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({ message: errorMessage });
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: userId },
+        where: { id: parseInt(userId) }, // Parse userId to ensure it's a number
       });
       expect(mockUserRepository.remove).not.toHaveBeenCalled();
     });

@@ -22,6 +22,12 @@ export class User {
   @Column()
   location!: string;
 
+  @Column({ default: "pending" })
+  status_reminder!: string;
+
+  @Column()
+  email!: string;
+
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   createdAt!: Date;
 }

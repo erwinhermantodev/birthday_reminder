@@ -1,6 +1,6 @@
 import express from "express";
 import userRoutes from "./routes/userRoutes";
-import { initializeBirthdayReminder } from "./services/initializeReminder";
+import { initializeBirthdayReminder, initializeBirthdayReminderRefresh } from "./services/initializeReminder";
 
 const app = express();
 const port = 3000;
@@ -13,3 +13,4 @@ app.listen(port, () => {
 });
 
 initializeBirthdayReminder();
+initializeBirthdayReminderRefresh();

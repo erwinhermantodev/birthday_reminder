@@ -17,6 +17,19 @@ export const deleteUser = async (userId: number): Promise<void> => {
   await userRepository.remove(user);
 };
 
+export const updateUserStatus = async (
+  userId: number,
+  status: string
+): Promise<void> => {
+  const userRepository = AppDataSource.getRepository(User);
+  const user = await userRepository.findOne({ where: { id: userId } });
+  if (!user) {
+    throw new Error("User not found");
+  }
+  user.status_reminder = status;
+  await userRepository.save(user);
+};
+
 const getUserRepository = (): Repository<User> => {
   return AppDataSource.getRepository(User);
 };
