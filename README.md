@@ -13,8 +13,8 @@ This is a simple application for sending birthday reminders to users via email.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/erwinhermantodev/birthday-reminder-app.git
-   cd birthday-reminder-app
+   git clone https://github.com/erwinhermantodev/birthday_reminder.git
+   cd birthday_reminder
 
    ```
 
