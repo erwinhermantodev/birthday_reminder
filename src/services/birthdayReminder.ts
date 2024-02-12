@@ -80,10 +80,10 @@ export const sendBirthdayMessage = async (
         updateUserStatus(userId, status);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.log("Error:", error);
       });
 
-    console.log(`${message}`);
+    // console.log(`${message}`);
   } catch (error) {
     console.error("Error sending birthday message:", error);
     await insertFailedMessageToQueue(userId, email, message);

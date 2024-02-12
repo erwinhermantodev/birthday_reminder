@@ -1,4 +1,4 @@
-import { createUser, deleteUser } from "./userService";
+import { createUser, deleteUser, updateUserStatus } from "./userService";
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/User";
 import { Repository } from "typeorm";
@@ -81,6 +81,59 @@ describe("userService", () => {
         where: { id: userId },
       });
       expect(mockUserRepository.remove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("updateUserStatus", () => {
+    it("should update status of an existing user", async () => {
+      const userId = 1;
+      const userStatus = "sent";
+
+      const mockSave = jest.fn();
+      const mockUserRepository: Partial<Repository<User>> = {
+        findOne: jest.fn().mockResolvedValueOnce({
+          id: userId,
+          status_reminder: "pending",
+        }),
+        save: mockSave,
+      };
+
+      AppDataSource.getRepository = jest
+        .fn()
+        .mockReturnValue(mockUserRepository as Repository<User>);
+
+      await updateUserStatus(userId, userStatus);
+
+      expect(AppDataSource.getRepository).toHaveBeenCalledWith(User);
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
+      expect(mockSave).toHaveBeenCalledWith({
+        id: userId,
+        status_reminder: userStatus,
+      });
+    });
+
+    it("should throw an error if user not found", async () => {
+      const userId = 1;
+      const userStatus = "sent";
+
+      const mockUserRepository: Partial<Repository<User>> = {
+        findOne: jest.fn().mockResolvedValueOnce(undefined),
+      };
+
+      AppDataSource.getRepository = jest
+        .fn()
+        .mockReturnValue(mockUserRepository as Repository<User>);
+
+      await expect(updateUserStatus(userId, userStatus)).rejects.toThrowError(
+        "User not found"
+      );
+
+      expect(AppDataSource.getRepository).toHaveBeenCalledWith(User);
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
     });
   });
 });
