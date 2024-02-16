@@ -27,7 +27,7 @@ This is a simple application for sending birthday reminders to users via email.
 3. **Install dependencies:**
 
    ```bash
-   docker-compose up -d
+   yarn
    ```
 
 4. **Start the application:**
